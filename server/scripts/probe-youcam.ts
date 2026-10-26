@@ -43,9 +43,29 @@ async function runProbe() {
     );
 
     const elapsedMs = Date.now() - startTime;
-    console.log(`✅ Success! Response received in ${elapsedMs}ms`);
+    console.log(`✅ File registered in ${elapsedMs}ms`);
     console.log('Status Code:', response.status);
-    console.log('Response Payload:', JSON.stringify(response.data, null, 2));
+
+    const fileId = response.data?.data?.files?.[0]?.file_id;
+    console.log('Registered File ID:', fileId);
+
+    if (fileId) {
+      console.log('\n📡 Testing /s2s/v2.0/task/skin-analysis with src_file_id and dst_actions...');
+      const taskRes = await axios.post(
+        `${baseUrl}/s2s/v2.0/task/skin-analysis`,
+        {
+          src_file_id: fileId,
+          dst_actions: ['wrinkle', 'pore', 'texture', 'acne', 'moisture', 'oiliness', 'redness', 'radiance']
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log('✅ Task creation response:', JSON.stringify(taskRes.data, null, 2));
+    }
 
     const outputPath = path.resolve(process.cwd(), 'scripts', 'last-probe-result.json');
     fs.writeFileSync(

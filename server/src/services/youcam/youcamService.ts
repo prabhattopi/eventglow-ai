@@ -125,16 +125,25 @@ export const analyzeSkin = async (imageBuffer?: Buffer, imageUrl?: string): Prom
     let fileId = '';
     if (imageBuffer) {
       fileId = await uploadFileToYouCam(imageBuffer);
+    } else if (imageUrl && imageUrl.startsWith('http')) {
+      try {
+        const imgRes = await axios.get(imageUrl, { responseType: 'arraybuffer', timeout: 8000 });
+        fileId = await uploadFileToYouCam(Buffer.from(imgRes.data));
+      } catch (err: any) {
+        console.warn('Image buffer download warning:', err?.message);
+      }
     }
 
     const taskPayload: Record<string, any> = {
-      actions: ['wrinkle', 'pore', 'texture', 'acne', 'dark_circle', 'redness', 'oiliness', 'moisture', 'radiance']
+      dst_actions: ['wrinkle', 'pore', 'texture', 'acne', 'moisture', 'oiliness', 'redness', 'radiance']
     };
 
     if (fileId) {
-      taskPayload.file_id = fileId;
+      taskPayload.src_file_id = fileId;
     } else if (imageUrl) {
       taskPayload.src_file_url = imageUrl;
+    } else {
+      taskPayload.src_file_url = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';
     }
 
     const taskRes = await axios.post(`${baseUrl}/s2s/v2.0/task/skin-analysis`, taskPayload, { headers });
