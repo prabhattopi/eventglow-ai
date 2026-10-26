@@ -10,48 +10,73 @@ const EVENT_NAMES: Record<string, string> = {
 };
 
 /**
- * Pure function: Sort and score wardrobes against skin undertone
+ * Filter and rank wardrobes based on event, gender, and skin undertone
  */
-export const rankWardrobesForUndertone = (catalog: WardrobeItem[], undertone: string): WardrobeItem[] => {
-  return catalog.map((item) => {
-    let bonus = 0;
-    if (undertone === 'olive' && (item.color.includes('Emerald') || item.color.includes('Gold'))) {
-      bonus = 8;
-    } else if (undertone === 'warm' && (item.color.includes('Gold') || item.color.includes('Burgundy'))) {
-      bonus = 7;
-    } else if (undertone === 'cool' && (item.color.includes('Sapphire') || item.color.includes('Noir'))) {
-      bonus = 8;
-    }
-    return {
-      ...item,
-      harmony_score: Math.min(99, item.harmony_score + bonus)
-    };
-  }).sort((a, b) => b.harmony_score - a.harmony_score);
+export const rankWardrobesForUndertone = (
+  catalog: WardrobeItem[],
+  undertone: string,
+  eventType?: string,
+  gender?: 'men' | 'women'
+): WardrobeItem[] => {
+  return catalog
+    .filter((item) => {
+      // 1. Filter by gender if specified
+      if (gender && item.gender && item.gender !== 'all' && item.gender !== gender) {
+        return false;
+      }
+      return true;
+    })
+    .map((item) => {
+      let score = item.harmony_score;
+      const matchesEvent = eventType && item.events?.includes(eventType as any);
+
+      // Event match bonus ensures event-tailored couture tops the list
+      if (matchesEvent) {
+        score += 12;
+      }
+
+      // Undertone harmony bonus
+      if (undertone === 'olive' && (item.color.includes('Emerald') || item.color.includes('Gold') || item.color.includes('Obsidian'))) {
+        score += 6;
+      } else if (undertone === 'warm' && (item.color.includes('Gold') || item.color.includes('Burgundy') || item.color.includes('Champagne') || item.color.includes('Blush') || item.color.includes('Amber'))) {
+        score += 6;
+      } else if (undertone === 'cool' && (item.color.includes('Sapphire') || item.color.includes('Obsidian') || item.color.includes('Noir') || item.color.includes('Slate') || item.color.includes('Pearl'))) {
+        score += 6;
+      }
+
+      return {
+        ...item,
+        harmony_score: Math.min(99, score)
+      };
+    })
+    .sort((a, b) => {
+      const aEvent = eventType && a.events?.includes(eventType as any) ? 1 : 0;
+      const bEvent = eventType && b.events?.includes(eventType as any) ? 1 : 0;
+      if (aEvent !== bEvent) return bEvent - aEvent;
+      return b.harmony_score - a.harmony_score;
+    });
 };
 
-/**
- * Pure function: Analyzes fabric compatibility against detected barrier sensitivities
- */
 export const analyzeFabricCompatibility = (metrics: SkinMetrics, wardrobe: WardrobeItem) => {
   const hasRednessOrAcne = metrics.redness.score < 75 || metrics.acne.score < 75;
 
   if (hasRednessOrAcne) {
     return {
-      safe_fabrics: ['100% Mulberry Silk', 'Breathable Modal / Cupro', 'Organic Long-Staple Cotton'],
+      safe_fabrics: ['100% Mulberry Silk', 'Breathable Cupro-Modal', 'Organic Long-Staple Cotton'],
       risk_fabrics: ['Coarse Wool Collars', '100% Synthetic Polyester Blends', 'Heavy Acrylic Knits'],
-      explanation: `With detected barrier sensitivity (redness score: ${metrics.redness.score}%), high-friction fabrics against the neck and decolletage can induce friction-induced flush. ${wardrobe.name} utilizes ${wardrobe.fabric}, which is optimal.`
+      explanation: `With detected barrier sensitivity (redness score: ${metrics.redness.score}%), high-friction fabrics against the neck can trigger friction erythema. ${wardrobe.name} utilizes ${wardrobe.fabric}, which is clinically optimal.`
     };
   }
 
   return {
-    safe_fabrics: ['Mulberry Silk', 'Fine Worsted Wool with Satin Linings', 'Italian Viscose', 'Linen-Silk Blends'],
-    risk_fabrics: ['Unwashed stiff denims', 'Non-breathable coated plastics'],
+    safe_fabrics: ['Mulberry Silk', 'Fine Worsted Wool with Silk Linings', 'Italian Viscose', 'Cupro-Modal'],
+    risk_fabrics: ['Unwashed stiff denims', 'Non-breathable coated synthetics'],
     explanation: `Skin exhibits balanced barrier resilience. All luxury tailoring fabrics in your curated wardrobe will drape smoothly without tactile irritation.`
   };
 };
 
 /**
- * Pure function: Synthesizes day-by-day countdown milestones
+ * Event-specific day-by-day milestone synthesis
  */
 export const synthesizeMilestones = (
   totalDays: number,
@@ -62,13 +87,53 @@ export const synthesizeMilestones = (
   const milestones: MilestoneDay[] = [];
   const stepCount = Math.min(totalDays, 5);
 
+  const eventTitles: Record<string, string[]> = {
+    wedding: [
+      'Day 1: Pre-Wedding Detox & Skin Barrier Calibration',
+      `Day ${Math.round(totalDays * 0.3)}: Pre-Shoot Texture & Micro-Pore Balancing`,
+      `Day ${Math.round(totalDays * 0.55)}: Sangeet Vascular Calm & Anti-Fatigue Flush`,
+      `Day ${Math.round(totalDays * 0.85)}: 48-Hour Pre-Ceremony Dewy Glaze`,
+      `Day ${totalDays}: THE WEDDING DAY — Peak Luminescence & Ceremony Rehearsal`
+    ],
+    keynote: [
+      'Day 1: Executive Fatigue Reset & Blue-Light Shield',
+      `Day ${Math.round(totalDays * 0.3)}: Stage-Lighting Anti-Glare Oil Control`,
+      `Day ${Math.round(totalDays * 0.55)}: 4K HD Camera Anti-Puffiness Protocol`,
+      `Day ${Math.round(totalDays * 0.85)}: High-Definition Canvas & Poreless Lock`,
+      `Day ${totalDays}: TECH SUMMIT KEYNOTE — Sharp Executive Vitality`
+    ],
+    gala: [
+      'Day 1: Black-Tie Red Carpet Skin Calibration',
+      `Day ${Math.round(totalDays * 0.3)}: High-Definition Stratum Corneum Polish`,
+      `Day ${Math.round(totalDays * 0.55)}: Evening Luminescence Induction`,
+      `Day ${Math.round(totalDays * 0.85)}: 48-Hour Gala Radiance Seal`,
+      `Day ${totalDays}: CHARITY GALA NIGHT — High-Society Luminescence`
+    ],
+    interview: [
+      'Day 1: Executive Grooming & Under-Eye De-Puffing',
+      `Day ${Math.round(totalDays * 0.3)}: Matte Equilibrium & Stress Barrier Care`,
+      `Day ${Math.round(totalDays * 0.55)}: Rested Authority & Tone Clarity`,
+      `Day ${Math.round(totalDays * 0.85)}: Panel Day Sharpness Alignment`,
+      `Day ${totalDays}: BOARDROOM INTERVIEW — Crisp Composure & Rested Focus`
+    ],
+    datenight: [
+      'Day 1: Romantic Hydration Infusion & Softness Calibration',
+      `Day ${Math.round(totalDays * 0.3)}: Micro-Texture Smoothing`,
+      `Day ${Math.round(totalDays * 0.55)}: Plump Dewy Skin Induction`,
+      `Day ${Math.round(totalDays * 0.85)}: Candlelight Radiance Priming`,
+      `Day ${totalDays}: ANNIVERSARY DINNER — Romantic Glow & Tailored Fit`
+    ]
+  };
+
+  const titles = eventTitles[eventType] || eventTitles['wedding'];
+
   for (let i = 1; i <= stepCount; i++) {
     const dayNum = i === 1 ? 1 : Math.round((totalDays / (stepCount - 1)) * (i - 1));
 
     if (i === 1) {
       milestones.push({
         day_number: 1,
-        title: 'Day 1: Diagnostic Baseline & Barrier Reset',
+        title: titles[0],
         focus: 'barrier_repair',
         skin_status_projected: `Baseline Score: ${metrics.overall_score}/100. Hydration deficit identified (${metrics.moisture.score}%).`,
         morning_routine: [
@@ -87,7 +152,7 @@ export const synthesizeMilestones = (
     } else if (i === 2) {
       milestones.push({
         day_number: dayNum,
-        title: `Day ${dayNum}: Micro-Texture Refinement & Pore Balancing`,
+        title: titles[1],
         focus: 'hydration',
         skin_status_projected: 'T-zone sebum stabilizing. Pore clarity improving (+8%).',
         morning_routine: [
@@ -106,7 +171,7 @@ export const synthesizeMilestones = (
     } else if (i === 3) {
       milestones.push({
         day_number: dayNum,
-        title: `Day ${dayNum}: Vascular Calm & Anti-Fatigue Flush`,
+        title: titles[2],
         focus: 'brightening',
         skin_status_projected: 'Under-eye dark circles visibly softened (-15% shadow density). Redness reduced.',
         morning_routine: [
@@ -124,7 +189,7 @@ export const synthesizeMilestones = (
     } else if (i === 4) {
       milestones.push({
         day_number: dayNum,
-        title: `Day ${dayNum}: The 48-Hour Pre-Event Glow Lock`,
+        title: titles[3],
         focus: 'brightening',
         skin_status_projected: 'Radiance Index reaches 88/100. Skin barrier fully primed with zero active irritation.',
         morning_routine: [
@@ -142,7 +207,7 @@ export const synthesizeMilestones = (
     } else {
       milestones.push({
         day_number: totalDays,
-        title: `Day ${totalDays}: ${eventType.toUpperCase()} DAY — Peak Glass-Skin & Ready Look`,
+        title: titles[4],
         focus: 'event_ready',
         skin_status_projected: `Peak Radiance (${projectedReadiness}%). Zero flaking, poreless canvas ready for HD photography.`,
         morning_routine: [
@@ -170,10 +235,10 @@ export const generateEventPlan = (params: {
   daysRemaining: number;
   metrics: SkinMetrics;
   preferredWardrobeId?: string;
+  gender?: 'men' | 'women';
 }): EventPlan => {
-  const { eventType, daysRemaining, metrics, preferredWardrobeId } = params;
+  const { eventType, daysRemaining, metrics, preferredWardrobeId, gender } = params;
 
-  // Calculate baseline Glow Readiness Index
   const baselineReadiness = Math.round(
     (metrics.overall_score * 0.4) +
     (metrics.radiance.score * 0.25) +
@@ -183,8 +248,9 @@ export const generateEventPlan = (params: {
 
   const projectedReadiness = Math.min(96, Math.round(baselineReadiness + (daysRemaining * 1.3)));
 
-  const sortedWardrobes = rankWardrobesForUndertone(mockWardrobeCatalog, metrics.undertone);
-  const primaryWardrobe = sortedWardrobes.find((w) => w.id === preferredWardrobeId) || sortedWardrobes[0];
+  // Rank wardrobes with event and gender awareness!
+  const sortedWardrobes = rankWardrobesForUndertone(mockWardrobeCatalog, metrics.undertone, eventType, gender);
+  const primaryWardrobe = sortedWardrobes.find((w) => w.id === preferredWardrobeId) || sortedWardrobes[0] || mockWardrobeCatalog[0];
   const alternativeWardrobes = sortedWardrobes.filter((w) => w.id !== primaryWardrobe.id);
 
   const milestones = synthesizeMilestones(daysRemaining, metrics, eventType, projectedReadiness);

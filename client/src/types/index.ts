@@ -25,12 +25,8 @@ export interface SkinAnalysisResult {
   source: 'youcam_live' | 'youcam_mock_engine';
   timestamp: string;
   metrics: SkinMetrics;
-  overlay_masks?: {
-    wrinkles?: string;
-    pores?: string;
-    spots?: string;
-    redness?: string;
-  };
+  overlay_masks?: Record<string, string>;
+  transformed_glow_url?: string;
   summary: string;
 }
 
@@ -38,6 +34,8 @@ export interface WardrobeItem {
   id: string;
   name: string;
   category: 'formal' | 'evening' | 'cocktail' | 'executive' | 'traditional';
+  gender?: 'men' | 'women' | 'all';
+  events?: ('wedding' | 'gala' | 'keynote' | 'interview' | 'datenight')[];
   color: string;
   hex: string;
   fabric: string;
@@ -89,7 +87,9 @@ export interface EngineStatus {
 export interface PersonaModel {
   id: string;
   name: string;
+  gender?: 'men' | 'women';
   image_url: string;
+  glow_image_url?: string;
   event: 'wedding' | 'gala' | 'keynote';
   days: number;
   description: string;

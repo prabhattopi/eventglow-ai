@@ -8,7 +8,7 @@ dotenv.config();
 async function testLiveImage() {
   const apiKey = process.env.YOUCAM_API_KEY;
   const baseUrl = process.env.YOUCAM_BASE_URL || 'https://yce-api-01.makeupar.com';
-  const imagePath = path.resolve(process.cwd(), '../assets/test-samples/youcam-verified-man.jpg');
+  const imagePath = path.resolve(process.cwd(), '../assets/test-samples/alex.jpg');
 
   console.log('Testing image:', imagePath);
   const imageBuffer = fs.readFileSync(imagePath);
@@ -28,7 +28,7 @@ async function testLiveImage() {
         {
           content_type: 'image/jpeg',
           file_size: imageBuffer.length,
-          file_name: 'real-man-portrait-1.jpg'
+          file_name: 'alex.jpg'
         }
       ]
     },

@@ -85,13 +85,11 @@ app.post('/api/skin/analyze', upload.single('image'), async (req, res) => {
   }
 });
 
-// 5. Apparel Virtual Try-On (YouCam VTO / Dual-Engine)
-app.post('/api/vto/try-on', upload.single('user_image'), async (req, res) => {
+// 5. Apparel Virtual Try-On (YouCam VTO / Lookbook Engine)
+app.post('/api/vto/try-on', async (req, res) => {
   try {
     const { garment_id } = req.body;
-    const file = req.file;
-
-    const result = await executeVTO(garment_id, file?.buffer);
+    const result = await executeVTO(garment_id);
     res.json({
       success: true,
       data: result
@@ -104,10 +102,11 @@ app.post('/api/vto/try-on', upload.single('user_image'), async (req, res) => {
   }
 });
 
+
 // 6. Generate Countdown Event Plan (Pure Functional Agent)
 app.post('/api/plan/generate', (req, res) => {
   try {
-    const { event_type, days_remaining, metrics, preferred_wardrobe_id } = req.body;
+    const { event_type, days_remaining, metrics, preferred_wardrobe_id, gender } = req.body;
 
     const skinMetrics = metrics || mockSkinAnalysisResult.metrics;
     const days = Number(days_remaining) || 14;
@@ -117,7 +116,8 @@ app.post('/api/plan/generate', (req, res) => {
       eventType: type,
       daysRemaining: days,
       metrics: skinMetrics,
-      preferredWardrobeId: preferred_wardrobe_id
+      preferredWardrobeId: preferred_wardrobe_id,
+      gender: gender as any
     });
 
     res.json({
