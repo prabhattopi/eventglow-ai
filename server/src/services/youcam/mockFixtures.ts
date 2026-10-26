@@ -117,27 +117,27 @@ export const mockWardrobeCatalog: WardrobeItem[] = [
 
 export const samplePreloadModels = [
   {
-    id: 'model-maya',
-    name: 'Maya V. (Wedding / Gala Lead)',
-    image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
-    event: 'wedding',
-    days: 14,
-    description: 'Preparing for Sister’s Destination Wedding in 14 Days. Needs glass-skin radiance and color-tuned couture.'
-  },
-  {
     id: 'model-alex',
     name: 'Alex C. (Tech Keynote & Executive Summit)',
-    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+    image_url: '/test-samples/youcam-verified-man.jpg',
     event: 'keynote',
     days: 7,
-    description: 'Upcoming Series A Keynote. Needs high-impact fatigue removal, pore control under stage lights, and sharp modern tailoring.'
+    description: 'Real Man Close-Up Portrait (YouCam Verified). Series A Keynote Lead.'
   },
   {
-    id: 'model-sophia',
-    name: 'Sophia L. (Anniversary Gala & Dinner)',
-    image_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
-    event: 'gala',
-    days: 21,
-    description: 'Black-Tie Charity Gala. Targeted for brightening, texture refining, and emerald/gold gown virtual try-on.'
+    id: 'model-marcus',
+    name: 'Marcus T. (Royal Wedding & Black-Tie)',
+    image_url: '/test-samples/real-man-portrait-2.jpg',
+    event: 'wedding',
+    days: 14,
+    description: 'Real Man Close-Up Portrait (YouCam Verified). High-definition event styling.'
+  },
+  {
+    id: 'model-maya',
+    name: 'Maya V. (Wedding / Gala Lead)',
+    image_url: '/test-samples/real-woman-portrait-1.jpg',
+    event: 'wedding',
+    days: 14,
+    description: 'Real Woman Close-Up Portrait (YouCam Verified). Glass-skin & couture try-on.'
   }
 ];
