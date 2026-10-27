@@ -6,7 +6,7 @@ import path from 'path';
 import { SkinAnalysisResult, SkinMetrics, WardrobeItem } from '../../types/index.js';
 import { mockSkinAnalysisResult, mockWardrobeCatalog } from './mockFixtures.js';
 
-let isMockMode: boolean = process.env.YOUCAM_MOCK_MODE !== 'false';
+let isMockMode: boolean = (process.env.YOUCAM_MOCK_MODE ?? process.env.MOCK_MODE) !== 'false';
 let mockCallsInterceptedCount: number = 0;
 
 const getApiKey = (): string => process.env.YOUCAM_API_KEY || '';

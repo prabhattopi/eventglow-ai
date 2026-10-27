@@ -161,9 +161,9 @@ If you have a Perfect Corp YouCam Developer Key and want to execute live cloud c
 PORT=5000
 YOUCAM_API_KEY=your_perfect_corp_api_key_here
 YOUCAM_BASE_URL=https://yce-api-01.makeupar.com
-MOCK_MODE=false
+YOUCAM_MOCK_MODE=false
 ```
-*(If omitted, the platform defaults safely to Quota Shield mode with 1,000 simulated clinical calibrations).*
+*(Note: Perfect Corp YouCam Cloud S2S API uses only `YOUCAM_API_KEY` as a Bearer token; no secret key is required. If omitted, the platform defaults safely to Quota Shield mode).*
 
 
 ### 3. Run Locally
