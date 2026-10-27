@@ -70,7 +70,9 @@ export const App: React.FC = () => {
   // Results & Analysis State
   const [selectedWardrobe, setSelectedWardrobe] = useState<WardrobeItem | null>(null);
   const [analysis, setAnalysis] = useState<SkinAnalysisResult | null>(null);
+  const [customAnalysis, setCustomAnalysis] = useState<SkinAnalysisResult | null>(null);
   const [plan, setPlan] = useState<EventPlan | null>(null);
+
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [scanStepMessage, setScanStepMessage] = useState<string>('');
   const [scanProgressPercent, setScanProgressPercent] = useState<number>(0);
@@ -220,7 +222,11 @@ export const App: React.FC = () => {
 
       if (skinData?.success) {
         setAnalysis(skinData.data);
+        if (customImageFile || customImagePreview) {
+          setCustomAnalysis(skinData.data);
+        }
         setScanProgressPercent(100);
+
 
         // Generate Plan with event, days, and gender (Dynamic #1 match computed by AI Stylist)
         const planRes = await fetch('/api/plan/generate', {
@@ -389,14 +395,21 @@ export const App: React.FC = () => {
     }
   };
 
-  // Select Preload Model
+  // Select Preload Model (Preserves your uploaded photo so you can easily toggle back!)
   const handleSelectModel = (model: PersonaModel) => {
     setSelectedModel(model);
-    setCustomImageFile(null);
-    setCustomImagePreview(null);
     const gender = (model.gender as 'men' | 'women') || 'men';
     handleSwitchGender(gender);
   };
+
+  // Switch back to Custom Uploaded Face
+  const handleSelectCustom = () => {
+    setSelectedModel(null);
+    if (customAnalysis) {
+      setAnalysis(customAnalysis);
+    }
+  };
+
 
 
   // Upload Custom File
@@ -501,15 +514,16 @@ Powered by Perfect Corp YouCam AI
     a.click();
   };
 
-  const displayUserImage =
-    customImagePreview || selectedModel?.image_url || models[0]?.image_url || '/test-samples/alex.jpg';
+  const isCustomActive = selectedModel === null && !!customImagePreview;
 
-  const displayGlowImage =
-    analysis?.transformed_glow_url ||
-    selectedModel?.glow_image_url ||
-    models.find((m) => m.id === selectedModel?.id)?.glow_image_url ||
-    customImagePreview ||
-    '/test-samples/alex-glow.jpg';
+  const displayUserImage = isCustomActive
+    ? customImagePreview!
+    : selectedModel?.image_url || models[0]?.image_url || '/test-samples/alex.jpg';
+
+  const displayGlowImage = isCustomActive
+    ? (customAnalysis?.transformed_glow_url || analysis?.transformed_glow_url || customImagePreview!)
+    : (selectedModel?.glow_image_url || models.find((m) => m.id === selectedModel?.id)?.glow_image_url || '/test-samples/alex-glow.jpg');
+
 
   const selectedMilestone = plan?.milestones?.[activeMilestoneDayIndex] || plan?.milestones?.[0];
 
@@ -647,7 +661,7 @@ Powered by Perfect Corp YouCam AI
 
             <div className="flex items-center gap-1.5">
               {models.map((model) => {
-                const isSelected = selectedModel?.id === model.id && !customImagePreview;
+                const isSelected = !isCustomActive && selectedModel?.id === model.id;
                 return (
                   <button
                     key={model.id}
@@ -669,13 +683,13 @@ Powered by Perfect Corp YouCam AI
               {/* Live / Uploaded Custom Face Persona */}
               {customImagePreview && (
                 <button
-                  onClick={() => setSelectedModel(null)}
+                  onClick={handleSelectCustom}
                   className={`flex-1 p-1.5 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                    selectedModel === null
+                    isCustomActive
                       ? 'bg-[#e6ca65]/20 border-[#e6ca65] shadow-md ring-1 ring-[#e6ca65]'
                       : 'bg-white/[0.02] border-white/10 hover:border-white/20'
                   }`}
-                  title="Your Custom Intake Face"
+                  title="Switch to Your Custom Face"
                 >
                   <img
                     src={customImagePreview}
@@ -688,6 +702,8 @@ Powered by Perfect Corp YouCam AI
                 </button>
               )}
             </div>
+
+
 
             {/* Custom Photo / Camera Row */}
             <div className="flex gap-2">
