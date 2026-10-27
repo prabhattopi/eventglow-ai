@@ -82,7 +82,6 @@ export const App: React.FC = () => {
   const [activeMilestoneDayIndex, setActiveMilestoneDayIndex] = useState<number>(0);
   const [sliderPos, setSliderPos] = useState<number>(50);
   const [studioView, setStudioView] = useState<'glow' | 'vto'>('glow');
-  const [activeHeatmap, setActiveHeatmap] = useState<'none' | 'pore' | 'redness' | 'radiance' | 'wrinkle'>('none');
 
   // 1. Initial Intake & Preload
   useEffect(() => {
@@ -826,14 +825,11 @@ Powered by Perfect Corp YouCam AI
         {/* CENTER STAGE: High-Impact Visual Studio & Split-Slider (5 Cols) */}
         <div className="lg:col-span-5 flex flex-col items-center justify-center p-3 lg:p-4 bg-black/60 relative overflow-hidden">
           {/* Studio View Switcher */}
-          <div className="flex items-center gap-1 bg-black/80 p-1 rounded-xl border border-white/10 mb-2 z-10 shadow-lg">
+          <div className="flex items-center gap-1.5 bg-black/80 p-1 rounded-xl border border-white/10 mb-3 z-10 shadow-lg">
             <button
-              onClick={() => {
-                setStudioView('glow');
-                setActiveHeatmap('none');
-              }}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                studioView === 'glow' && activeHeatmap === 'none'
+              onClick={() => setStudioView('glow')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                studioView === 'glow'
                   ? 'bg-gradient-to-r from-[#e6ca65] to-[#f59e0b] text-black shadow-md'
                   : 'text-gray-400 hover:text-white'
               }`}
@@ -843,7 +839,7 @@ Powered by Perfect Corp YouCam AI
             </button>
             <button
               onClick={() => setStudioView('vto')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 studioView === 'vto'
                   ? 'bg-gradient-to-r from-[#e6ca65] to-[#f59e0b] text-black shadow-md'
                   : 'text-gray-400 hover:text-white'
@@ -854,38 +850,6 @@ Powered by Perfect Corp YouCam AI
             </button>
           </div>
 
-          {/* Real YouCam Heatmap Diagnostic Selector Bar */}
-          {studioView === 'glow' && analysis && (
-            <div className="flex items-center gap-1 mb-2 z-10 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/10">
-              <span className="text-[10px] text-gray-400 mr-1 font-semibold flex items-center gap-1">
-                <Activity className="w-3 h-3 text-[#e6ca65]" />
-                YouCam Heatmaps:
-              </span>
-              {(['none', 'pore', 'redness', 'radiance', 'wrinkle'] as const).map((key) => {
-                const labels: Record<string, string> = {
-                  none: 'Clean Face',
-                  pore: '🟣 Pores',
-                  redness: '🔴 Redness',
-                  radiance: '✨ Radiance',
-                  wrinkle: '⚡ Wrinkles'
-                };
-                const isActive = activeHeatmap === key;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setActiveHeatmap(key)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? 'bg-[#e6ca65] text-black shadow-sm'
-                        : 'text-gray-400 hover:text-gray-200 bg-white/5 hover:bg-white/10'
-                    }`}
-                  >
-                    {labels[key]}
-                  </button>
-                );
-              })}
-            </div>
-          )}
 
           {/* Main Comparison Canvas */}
           <div className="relative w-full max-w-[420px] aspect-[4/5] rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-black group select-none">
@@ -949,14 +913,6 @@ Powered by Perfect Corp YouCam AI
                     alt="Current Face"
                     className="absolute inset-0 w-[420px] h-full object-cover object-top max-w-none"
                   />
-                  {/* Real YouCam AI Cloud Diagnostic Heatmap (Clipped with baseline side) */}
-                  {activeHeatmap !== 'none' && analysis?.overlay_masks?.[activeHeatmap] && (
-                    <img
-                      src={analysis.overlay_masks[activeHeatmap]}
-                      alt={`${activeHeatmap} diagnostic heatmap`}
-                      className="absolute inset-0 w-[420px] h-full object-cover object-top max-w-none mix-blend-screen opacity-90 pointer-events-none"
-                    />
-                  )}
                 </div>
 
                 {/* Split Handle Divider Line */}
@@ -970,21 +926,15 @@ Powered by Perfect Corp YouCam AI
                 </div>
 
                 {/* Corner Badges */}
-                <div className="absolute top-2.5 left-2.5 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-semibold text-gray-300 border border-white/10">
-                  {activeHeatmap !== 'none' ? `Day 1: ${activeHeatmap.toUpperCase()} Heatmap` : 'Day 1 Baseline Face'}
+                <div className="absolute top-2.5 left-2.5 bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-semibold text-gray-200 border border-white/10">
+                  Day 1 Baseline Face
                 </div>
-                <div className="absolute top-2.5 right-2.5 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-[#e6ca65] border border-[#e6ca65]/30 flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5" />
+                <div className="absolute top-2.5 right-2.5 bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-[#e6ca65] border border-[#e6ca65]/30 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
                   Day {daysRemaining} {selectedEvent.toUpperCase()} Glow
                 </div>
-
-                {/* Diagnostic Heatmap Indicator Label */}
-                {activeHeatmap !== 'none' && (
-                  <div className="absolute bottom-10 left-3 bg-black/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#e6ca65]/40 text-[#e6ca65] text-[10px] font-bold z-10">
-                    YouCam S2S Cloud Diagnostic: {activeHeatmap.toUpperCase()} Layer
-                  </div>
-                )}
               </div>
+
 
             ) : (
               /* Couture Virtual Try-On View */
@@ -1252,16 +1202,7 @@ Powered by Perfect Corp YouCam AI
                   {metricList.map(({ label, data, icon: Icon, color }) => (
                     <div
                       key={label}
-                      onClick={() => {
-                        const mapKey = label.toLowerCase();
-                        if (mapKey.includes('pore')) setActiveHeatmap('pore');
-                        else if (mapKey.includes('redness')) setActiveHeatmap('redness');
-                        else if (mapKey.includes('radiance')) setActiveHeatmap('radiance');
-                        else if (mapKey.includes('firmness') || mapKey.includes('wrinkle')) setActiveHeatmap('wrinkle');
-                        setStudioView('glow');
-                      }}
-                      className="bg-black/40 border border-white/10 hover:border-[#e6ca65]/50 rounded-lg p-2.5 space-y-1 cursor-pointer transition-all hover:bg-white/[0.04]"
-                      title="Click to project YouCam Diagnostic Heatmap onto your face"
+                      className="bg-black/40 border border-white/10 hover:border-[#e6ca65]/40 rounded-lg p-2.5 space-y-1.5 transition-all hover:bg-white/[0.03]"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-200">
@@ -1269,9 +1210,6 @@ Powered by Perfect Corp YouCam AI
                           <span>{label}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-gray-400 group-hover:text-[#e6ca65] transition-colors">
-                            Project ↗
-                          </span>
                           <span className="text-xs font-bold font-['Outfit'] text-white">{data.score}%</span>
                           <span
                             className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-bold ${
@@ -1292,10 +1230,15 @@ Powered by Perfect Corp YouCam AI
                           style={{ width: `${data.score}%` }}
                         />
                       </div>
+                      {data.description && (
+                        <p className="text-[10px] text-gray-400 m-0 truncate pt-0.5">
+                          {data.description}
+                        </p>
+                      )}
                     </div>
-
                   ))}
                 </div>
+
 
                 {/* Clinical summary */}
                 <div className="p-3 rounded-xl bg-[#e6ca65]/5 border border-[#e6ca65]/20 text-[11px] text-gray-300 leading-relaxed">
