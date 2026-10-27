@@ -897,6 +897,14 @@ Powered by Perfect Corp YouCam AI
                     alt="Current Face"
                     className="absolute inset-0 w-[420px] h-full object-cover object-top max-w-none"
                   />
+                  {/* Real YouCam AI Cloud Diagnostic Heatmap (Clipped with baseline side) */}
+                  {activeHeatmap !== 'none' && analysis?.overlay_masks?.[activeHeatmap] && (
+                    <img
+                      src={analysis.overlay_masks[activeHeatmap]}
+                      alt={`${activeHeatmap} diagnostic heatmap`}
+                      className="absolute inset-0 w-[420px] h-full object-cover object-top max-w-none mix-blend-screen opacity-90 pointer-events-none"
+                    />
+                  )}
                 </div>
 
                 {/* Split Handle Divider Line */}
@@ -911,27 +919,21 @@ Powered by Perfect Corp YouCam AI
 
                 {/* Corner Badges */}
                 <div className="absolute top-2.5 left-2.5 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-semibold text-gray-300 border border-white/10">
-                  Day 1 Baseline Face
+                  {activeHeatmap !== 'none' ? `Day 1: ${activeHeatmap.toUpperCase()} Heatmap` : 'Day 1 Baseline Face'}
                 </div>
                 <div className="absolute top-2.5 right-2.5 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-[#e6ca65] border border-[#e6ca65]/30 flex items-center gap-1">
                   <Sparkles className="w-2.5 h-2.5" />
                   Day {daysRemaining} {selectedEvent.toUpperCase()} Glow
                 </div>
 
-                {/* Diagnostic Heatmap Overlay Layer (Real YouCam AI Cloud Maps) */}
-                {activeHeatmap !== 'none' && analysis?.overlay_masks?.[activeHeatmap] && (
-                  <div className="absolute inset-0 pointer-events-none z-10">
-                    <img
-                      src={analysis.overlay_masks[activeHeatmap]}
-                      alt={`${activeHeatmap} diagnostic heatmap`}
-                      className="w-full h-full object-cover object-top mix-blend-screen opacity-85"
-                    />
-                    <div className="absolute bottom-10 left-3 bg-black/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#e6ca65]/40 text-[#e6ca65] text-[10px] font-bold">
-                      YouCam Cloud Diagnostic: {activeHeatmap.toUpperCase()} Layer
-                    </div>
+                {/* Diagnostic Heatmap Indicator Label */}
+                {activeHeatmap !== 'none' && (
+                  <div className="absolute bottom-10 left-3 bg-black/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#e6ca65]/40 text-[#e6ca65] text-[10px] font-bold z-10">
+                    YouCam S2S Cloud Diagnostic: {activeHeatmap.toUpperCase()} Layer
                   </div>
                 )}
               </div>
+
             ) : (
               /* Couture Virtual Try-On View */
               <div className="relative w-full h-full flex flex-col justify-end">

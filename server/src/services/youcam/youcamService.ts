@@ -77,8 +77,10 @@ export const mapLiveSkinMetrics = (data: any, scoreInfo?: any): SkinMetrics => {
 };
 
 /**
- * Dynamically synthesizes an event-ready luminous transformation image
+ * Dynamically synthesizes an event-ready revitalized transformation image
  * Calibrated specifically for the user's diagnosed dermal metrics and undertone
+ * Employs realistic clinical dermal refinement: micro-pore softening, healthy skin tone
+ * balance, and tack-sharp facial features — zero artificial overexposure or wash-out!
  */
 export const generateDynamicGlow = async (imageBuffer: Buffer, undertone = 'warm'): Promise<string> => {
   try {
@@ -86,36 +88,26 @@ export const generateDynamicGlow = async (imageBuffer: Buffer, undertone = 'warm
       .resize(1024, 1024, { fit: 'cover', position: 'center' })
       .toBuffer();
 
-    // 1. Edge-preserving facial contour sharpness (crisp eyes, brows, lips, hairline)
-    const edges = await sharp(base)
-      .sharpen({ sigma: 1.8, m1: 2.2, m2: 0.8 })
+    // 1. High-frequency structural sharpness: keep eyes, eyebrows, beard, lips, and facial contours tack-sharp
+    const sharpDetails = await sharp(base)
+      .sharpen({ sigma: 1.2, m1: 1.5, m2: 0.5 })
       .toBuffer();
 
-    // 2. Clinical dermal smoothing (eradicates pores, blemishes, and texture roughness)
-    const smoothed = await sharp(base)
-      .blur(2.0)
+    // 2. Refined skin texture: Gentle dermal softening (subtle micro-pore & blemish refinement)
+    // Kept subtle (sigma 1.1) with natural 2% radiance and 4% healthy skin tone vibrance
+    const softenedDermis = await sharp(base)
+      .blur(1.1)
       .modulate({
-        brightness: 1.06,
-        saturation: 1.10
+        brightness: 1.02, // Gentle natural luminescence — NO washed-out white light
+        saturation: 1.04  // Natural healthy skin tone
       })
       .toBuffer();
 
-    // 3. Luminous specular bloom (champagne/golden glass-skin radiance on high cheekbones)
-    const bloom = await sharp(base)
-      .blur(7.0)
-      .modulate({
-        brightness: 1.18,
-        saturation: 1.15
-      })
-      .toBuffer();
-
-    // 4. Multi-layer dermal fusion
-    const glowBuffer = await sharp(smoothed)
+    // 3. Multi-layer dermal fusion via soft-light blend: produces rich, photorealistic, healthy event skin
+    const glowBuffer = await sharp(softenedDermis)
       .composite([
-        { input: edges, blend: 'soft-light' },
-        { input: bloom, blend: 'screen' }
+        { input: sharpDetails, blend: 'soft-light' }
       ])
-      .gamma(1.04)
       .jpeg({ quality: 96 })
       .toBuffer();
 
