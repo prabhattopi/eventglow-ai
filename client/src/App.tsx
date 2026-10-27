@@ -238,11 +238,17 @@ export const App: React.FC = () => {
         if (planData?.success) {
           setPlan(planData.data);
           if (planData.data.primary_wardrobe) {
-            handleSelectWardrobe(planData.data.primary_wardrobe);
+            setSelectedWardrobe(planData.data.primary_wardrobe);
           }
         }
+
+        // Keep studio view on Face Glow Transformation so user sees their scanned face!
+        setStudioView('glow');
+        // Automatically switch right dock to 'diagnostics' (Clinical Scan (9)) so 9 clinical metrics animate in!
+        setActiveTab('diagnostics');
         handleCelebrate();
       } else {
+
         alert(skinData?.error || 'Analysis failed. Please check the image framing.');
       }
     } catch (err: any) {
@@ -353,41 +359,46 @@ export const App: React.FC = () => {
   };
 
 
+  // Gender Toggle (Men's vs Women's Luxury Collection)
+  const handleSwitchGender = async (newGender: 'men' | 'women') => {
+    setUserGender(newGender);
+    const relevantWardrobes = wardrobes.filter(
+      (w) => (!w.gender || w.gender === 'all' || w.gender === newGender) && (!w.events || w.events.includes(selectedEvent))
+    );
+    const topWardrobe = relevantWardrobes[0] || wardrobes.find((w) => !w.gender || w.gender === newGender);
+    if (topWardrobe) {
+      setSelectedWardrobe(topWardrobe);
+    }
+    try {
+      const planRes = await fetch('/api/plan/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_type: selectedEvent,
+          days_remaining: daysRemaining,
+          metrics: analysis?.metrics,
+          preferred_wardrobe_id: topWardrobe?.id,
+          gender: newGender
+        })
+      });
+      const planData = await planRes.json();
+      if (planData?.success) {
+        setPlan(planData.data);
+      }
+    } catch (err) {
+      console.warn('Gender switch plan update:', err);
+    }
+  };
+
   // Select Preload Model
   const handleSelectModel = (model: PersonaModel) => {
     setSelectedModel(model);
     setCustomImageFile(null);
     setCustomImagePreview(null);
     const gender = (model.gender as 'men' | 'women') || 'men';
-    setUserGender(gender);
-
-    // Update wardrobe immediately to match gender AND current event
-    const relevantWardrobes = wardrobes.filter(
-      (w) => (!w.gender || w.gender === 'all' || w.gender === gender) && w.events?.includes(selectedEvent)
-    );
-    const topWardrobe = relevantWardrobes[0] || wardrobes.find((w) => !w.gender || w.gender === gender);
-    if (topWardrobe) {
-      setSelectedWardrobe(topWardrobe);
-    }
-
-    // Refresh agent plan
-    fetch('/api/plan/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event_type: selectedEvent,
-        days_remaining: daysRemaining,
-        metrics: analysis?.metrics,
-        preferred_wardrobe_id: topWardrobe?.id,
-        gender
-      })
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.success) setPlan(data.data);
-      })
-      .catch((err) => console.warn('Plan update on model change:', err));
+    handleSwitchGender(gender);
   };
+
 
   // Upload Custom File
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -607,15 +618,33 @@ Powered by Perfect Corp YouCam AI
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#e6ca65]">
                 1. Persona & Face Intake
               </span>
-              {/* Gender Indicator Pill */}
-              <button
-                onClick={() => setUserGender(userGender === 'men' ? 'women' : 'men')}
-                className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-gray-300 cursor-pointer"
-                title="Toggle Men's or Women's Couture"
-              >
-                {userGender === 'men' ? "Men's Line" : "Women's Line"}
-              </button>
+              {/* Dual Gender Segmented Control */}
+              <div className="flex items-center gap-0.5 bg-white/5 p-0.5 rounded-lg border border-white/10">
+                <button
+                  onClick={() => handleSwitchGender('men')}
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    userGender === 'men'
+                      ? 'bg-[#e6ca65] text-black shadow-sm'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  title="Curate for Men"
+                >
+                  👔 Men
+                </button>
+                <button
+                  onClick={() => handleSwitchGender('women')}
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                    userGender === 'women'
+                      ? 'bg-[#e6ca65] text-black shadow-sm'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  title="Curate for Women"
+                >
+                  👗 Women
+                </button>
+              </div>
             </div>
+
 
             <div className="flex items-center gap-1.5">
               {models.map((model) => {
@@ -738,10 +767,33 @@ Powered by Perfect Corp YouCam AI
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#e6ca65]">
                 2. Curated {userGender === 'men' ? "Men's" : "Women's"} Couture
               </span>
-              <span className="text-[10px] text-gray-400 capitalize bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
-                {selectedEvent}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-0.5 bg-white/5 p-0.5 rounded-lg border border-white/10">
+                  <button
+                    onClick={() => handleSwitchGender('men')}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                      userGender === 'men' ? 'bg-[#e6ca65] text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                    }`}
+                    title="Switch to Men's Suits"
+                  >
+                    👔
+                  </button>
+                  <button
+                    onClick={() => handleSwitchGender('women')}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                      userGender === 'women' ? 'bg-[#e6ca65] text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                    }`}
+                    title="Switch to Women's Gowns"
+                  >
+                    👗
+                  </button>
+                </div>
+                <span className="text-[10px] text-gray-400 capitalize bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                  {selectedEvent}
+                </span>
+              </div>
             </div>
+
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
               {currentWardrobesList.map((item) => {
                 const isSelected = activeWardrobe?.id === item.id;
@@ -1217,9 +1269,12 @@ Powered by Perfect Corp YouCam AI
                           <span>{label}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-gray-400 group-hover:text-[#e6ca65] transition-colors">
+                            Project ↗
+                          </span>
                           <span className="text-xs font-bold font-['Outfit'] text-white">{data.score}%</span>
                           <span
-                            className={`text-[9px] uppercase px-1 py-0.2 rounded font-bold ${
+                            className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-bold ${
                               data.severity === 'optimal'
                                 ? 'bg-emerald-500/20 text-emerald-300'
                                 : data.severity === 'low'
@@ -1231,13 +1286,14 @@ Powered by Perfect Corp YouCam AI
                           </span>
                         </div>
                       </div>
-                      <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-[#e6ca65] to-[#f59e0b] rounded-full"
+                          className="h-full bg-gradient-to-r from-[#e6ca65] via-amber-400 to-[#f59e0b] rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(230,202,101,0.4)]"
                           style={{ width: `${data.score}%` }}
                         />
                       </div>
                     </div>
+
                   ))}
                 </div>
 
