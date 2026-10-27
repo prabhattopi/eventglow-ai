@@ -152,17 +152,19 @@ cd ../client && npm install
 cd ..
 ```
 
-### 2. Configure Environment Variables
-Create a `.env` file in the `server` directory (or duplicate `server/.env.example`):
+### 2. (Optional) Live YouCam API Key Configuration
+> [!TIP]
+> **⚡ Zero-Configuration Ready:** You can **skip this step entirely!** EventGlow AI runs out-of-the-box in **Safe Quota Shield Mode** with full clinical fixtures and zero setup required.
 
+If you have a Perfect Corp YouCam Developer Key and want to execute live cloud calls, create `server/.env` (or copy `server/.env.example`):
 ```env
 PORT=5000
 YOUCAM_API_KEY=your_perfect_corp_api_key_here
 YOUCAM_BASE_URL=https://yce-api-01.makeupar.com
 MOCK_MODE=false
 ```
+*(If omitted, the platform defaults safely to Quota Shield mode with 1,000 simulated clinical calibrations).*
 
-*(Note: If `YOUCAM_API_KEY` is omitted or `MOCK_MODE=true`, the platform runs in Safe Quota Shield mode with 1,000 free simulated clinical calibrations).*
 
 ### 3. Run Locally
 From the project root:
